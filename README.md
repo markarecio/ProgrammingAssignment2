@@ -26,23 +26,36 @@ really a list containing a function to
 2.  get the value of the vector
 3.  set the value of the mean
 4.  get the value of the mean
-
-<!-- -->
-
-    makeVector <- function(x = numeric()) {
-            m <- NULL
-            set <- function(y) {
-                    x <<- y
-                    m <<- NULL
-            }
-            get <- function() x
-            setmean <- function(mean) m <<- mean
-            getmean <- function() m
-            list(set = set, get = get,
-                 setmean = setmean,
-                 getmean = getmean)
-    }
-
+##
+## I simply set the input x as a matrix
+## and then set the solved value "s" as a null
+## then I changed every reference to "mean" to "solve"
+makeCacheMatrix <- function(x = matrix(sample(1:100,9),3,3)) {
+  s <- NULL
+  set <- function(y) {
+    x <<- y
+    s <<- NULL
+  }
+  get <- function() x
+  setsolve <- function(solve) s <<- solve
+  getsolve <- function() s
+  list(set = set, get = get,
+       setsolve = setsolve,
+       getsolve = getsolve)
+}
+##
+## Same here, changed "mean" to "solve" and "m" to "s"
+cacheSolve <- function(x, ...) {
+  s <- x$getsolve()
+  if(!is.null(s)) {
+    message("getting inversed matrix")
+    return(s)
+  }
+  data <- x$get()
+  s <- solve(data, ...)
+  x$setsolve(s)
+  s
+}
 The following function calculates the mean of the special "vector"
 created with the above function. However, it first checks to see if the
 mean has already been calculated. If so, it `get`s the mean from the
@@ -50,17 +63,6 @@ cache and skips the computation. Otherwise, it calculates the mean of
 the data and sets the value of the mean in the cache via the `setmean`
 function.
 
-    cachemean <- function(x, ...) {
-            m <- x$getmean()
-            if(!is.null(m)) {
-                    message("getting cached data")
-                    return(m)
-            }
-            data <- x$get()
-            m <- mean(data, ...)
-            x$setmean(m)
-            m
-    }
 
 ### Assignment: Caching the Inverse of a Matrix
 
@@ -79,12 +81,37 @@ Write the following functions:
     already been calculated (and the matrix has not changed), then
     `cacheSolve` should retrieve the inverse from the cache.
 
+makeCacheMatrix <- function(x = matrix()) {
+
+inv <- NULL
+set <- function(y) {
+x <<- y
+inv <<- NULL
+}
+get <- function() x
+setinv <- function(inverse) inv <<- inverse
+getinv <- function() inv
+list(set = set, get = get, setinv = setinv, getinv = getinv)
+}
+
 Computing the inverse of a square matrix can be done with the `solve`
 function in R. For example, if `X` is a square invertible matrix, then
 `solve(X)` returns its inverse.
-
+cacheSolve <- function(x, ...) {
+## Return a matrix that is the inverse of 'x'
+inv <- x$getinv()
+if(!is.null(inv)) {
+message("getting cached result")
+return(inv)
+}
+data <- x$get()
+inv <- solve(data, ...)
+x$setinv(inv)
+inv
+}
 For this assignment, assume that the matrix supplied is always
 invertible.
+
 
 In order to complete this assignment, you must do the following:
 
@@ -101,5 +128,13 @@ In order to complete this assignment, you must do the following:
     the completed R code for the assignment.
 
 ### Grading
-
+---------------Checking the program------------------------
+m <- matrix(rnorm(16),4,4)
+m1 <- makeCacheMatrix(m)
+cacheSolve(m1)
+[,1] [,2] [,3] [,4]
+[1,] -0.1653269 0.2592203 0.6176218 -0.7520955
+[2,] 0.2828334 -0.1853499 0.4511382 0.2094365
+[3,] 0.1434840 1.0413868 -0.3550853 -0.3261154
+[4,] 0.1793583 -0.4252171 -0.4371493 -0.1749830
 This assignment will be graded via peer assessment.
